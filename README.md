@@ -43,7 +43,7 @@ C:\Windows\System32\drivers\etc\hosts
 В качестве URL кнопки укажи:
 
 ```
-https://max-antivalidator.vercel.app/redirect?url=http://my-local-bot.com:3000/your/path
+https://max-antivalidator.vercel.app/redirect?url=https://my-local-bot.com/your/path
 ```
 
 ### Как это работает
