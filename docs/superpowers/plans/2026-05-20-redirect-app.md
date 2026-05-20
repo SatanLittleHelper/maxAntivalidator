@@ -14,70 +14,42 @@
 
 | Файл | Назначение |
 |---|---|
-| `package.json` | Зависимости и скрипты |
-| `tsconfig.json` | Конфиг TypeScript |
-| `nest-cli.json` | Конфиг Nest CLI |
-| `src/app.module.ts` | Корневой модуль |
-| `src/app.controller.ts` | Эндпоинт GET /redirect |
-| `src/app.controller.spec.ts` | Тесты контроллера |
-| `src/main.ts` | Bootstrap для локального запуска |
+| `package.json` | Зависимости и скрипты (генерируется CLI) |
+| `tsconfig.json` | Конфиг TypeScript со strict mode (генерируется CLI, обновляется) |
+| `nest-cli.json` | Конфиг Nest CLI (генерируется CLI) |
+| `src/app.module.ts` | Корневой модуль (перезаписывается) |
+| `src/app.controller.ts` | Эндпоинт GET /redirect (перезаписывается) |
+| `src/app.controller.spec.ts` | Тесты контроллера (перезаписывается) |
+| `src/main.ts` | Bootstrap для локального запуска (генерируется CLI) |
 | `api/index.ts` | Vercel serverless handler |
 | `vercel.json` | Роутинг Vercel |
 
 ---
 
-## Задача 1: Инициализация проекта
+## Задача 1: Скаффолдинг через Nest CLI
 
 **Файлы:**
-- Создать: `package.json`
-- Создать: `tsconfig.json`
-- Создать: `nest-cli.json`
+- Генерируется: `package.json`, `tsconfig.json`, `nest-cli.json`, `src/main.ts`, `src/app.module.ts`, `src/app.controller.ts`, `src/app.controller.spec.ts`, `src/app.service.ts`
 
-- [ ] **Шаг 1: Создать `package.json`**
+- [ ] **Шаг 1: Создать NestJS проект через CLI**
 
-```json
-{
-  "name": "max-antivalidator",
-  "version": "0.0.1",
-  "private": true,
-  "scripts": {
-    "build": "nest build",
-    "start": "nest start",
-    "start:dev": "nest start --watch",
-    "start:prod": "node dist/main",
-    "test": "jest",
-    "test:watch": "jest --watch"
-  },
-  "dependencies": {
-    "@nestjs/common": "^10.0.0",
-    "@nestjs/core": "^10.0.0",
-    "@nestjs/platform-express": "^10.0.0",
-    "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.1"
-  },
-  "devDependencies": {
-    "@nestjs/cli": "^10.0.0",
-    "@nestjs/schematics": "^10.0.0",
-    "@nestjs/testing": "^10.0.0",
-    "@types/express": "^4.17.17",
-    "@types/jest": "^29.5.2",
-    "@types/node": "^20.3.1",
-    "@vercel/node": "^3.0.0",
-    "jest": "^29.5.0",
-    "ts-jest": "^29.1.0",
-    "typescript": "^5.1.3"
-  },
-  "jest": {
-    "moduleFileExtensions": ["js", "json", "ts"],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": { "^.+\\.(t|j)s$": "ts-jest" },
-    "testEnvironment": "node"
-  }
-}
+```bash
+npx @nestjs/cli new . --skip-git --package-manager npm
 ```
 
-- [ ] **Шаг 2: Создать `tsconfig.json`**
+Если CLI спрашивает про существующие файлы — подтверди перезапись. Проект будет создан в текущей директории.
+
+Ожидаемый результат: появляются `src/`, `node_modules/`, `package.json`, `tsconfig.json`, `nest-cli.json`.
+
+- [ ] **Шаг 2: Удалить ненужные файлы**
+
+```bash
+rm src/app.service.ts src/app.service.spec.ts
+```
+
+- [ ] **Шаг 3: Включить strict mode в `tsconfig.json`**
+
+Открыть `tsconfig.json`, удалить строки `"strictNullChecks": false` и `"noImplicitAny": false` (если есть), добавить `"strict": true`:
 
 ```json
 {
@@ -94,46 +66,34 @@
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
-    "strictNullChecks": false,
-    "noImplicitAny": false
+    "strict": true
   }
 }
 ```
 
-- [ ] **Шаг 3: Создать `nest-cli.json`**
-
-```json
-{
-  "$schema": "https://json.schemastore.org/nest-cli",
-  "collection": "@nestjs/schematics",
-  "sourceRoot": "src"
-}
-```
-
-- [ ] **Шаг 4: Установить зависимости**
+- [ ] **Шаг 4: Установить `@vercel/node`**
 
 ```bash
-npm install
+npm install --save-dev @vercel/node
 ```
-
-Ожидаемый результат: появляется `node_modules/`, `package-lock.json`.
 
 - [ ] **Шаг 5: Закоммитить**
 
 ```bash
-git add package.json tsconfig.json nest-cli.json package-lock.json
-git commit -m "Инициализация NestJS проекта"
+git add package.json package-lock.json tsconfig.json nest-cli.json src/main.ts
+git commit -m "Скаффолдинг NestJS проекта через Nest CLI"
 ```
 
 ---
 
-## Задача 2: Корневой модуль и bootstrap
+## Задача 2: Корневой модуль
 
 **Файлы:**
-- Создать: `src/app.module.ts`
-- Создать: `src/main.ts`
+- Изменить: `src/app.module.ts`
 
-- [ ] **Шаг 1: Создать `src/app.module.ts`**
+- [ ] **Шаг 1: Заменить содержимое `src/app.module.ts`**
+
+CLI генерирует модуль с импортом `AppService` — он нам не нужен. Заменить файл:
 
 ```typescript
 import { Module } from '@nestjs/common';
@@ -145,25 +105,11 @@ import { AppController } from './app.controller';
 export class AppModule {}
 ```
 
-- [ ] **Шаг 2: Создать `src/main.ts`**
-
-```typescript
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  await app.listen(3000);
-}
-
-bootstrap();
-```
-
-- [ ] **Шаг 3: Закоммитить**
+- [ ] **Шаг 2: Закоммитить**
 
 ```bash
-git add src/app.module.ts src/main.ts
-git commit -m "Добавить корневой модуль и bootstrap"
+git add src/app.module.ts
+git commit -m "Упростить AppModule, убрать AppService"
 ```
 
 ---
@@ -171,10 +117,10 @@ git commit -m "Добавить корневой модуль и bootstrap"
 ## Задача 3: Контроллер редиректа (TDD)
 
 **Файлы:**
-- Создать: `src/app.controller.spec.ts`
-- Создать: `src/app.controller.ts`
+- Изменить: `src/app.controller.spec.ts`
+- Изменить: `src/app.controller.ts`
 
-- [ ] **Шаг 1: Написать падающий тест в `src/app.controller.spec.ts`**
+- [ ] **Шаг 1: Заменить тесты в `src/app.controller.spec.ts`**
 
 ```typescript
 import { Test, TestingModule } from '@nestjs/testing';
@@ -213,9 +159,9 @@ describe('AppController', () => {
 npm test
 ```
 
-Ожидаемый результат: ошибка `Cannot find module './app.controller'`.
+Ожидаемый результат: тесты падают, так как текущий контроллер не имеет метода `redirect`.
 
-- [ ] **Шаг 3: Реализовать контроллер в `src/app.controller.ts`**
+- [ ] **Шаг 3: Заменить `src/app.controller.ts`**
 
 ```typescript
 import { Controller, Get, Query, Res } from '@nestjs/common';
@@ -316,6 +262,8 @@ npm run start:dev
 Ожидаемый результат: `Nest application successfully started` на порту 3000.
 
 - [ ] **Шаг 2: Проверить редирект**
+
+В отдельном терминале:
 
 ```bash
 curl -v "http://localhost:3000/redirect?url=https://example.com" 2>&1 | grep -E "Location|< HTTP"
