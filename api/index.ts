@@ -7,13 +7,16 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 const expressApp = express();
 const adapter = new ExpressAdapter(expressApp);
 
-let appInitialized = false;
+let initPromise: Promise<void> | null = null;
 
-async function initApp(): Promise<void> {
-  if (appInitialized) return;
-  const app = await NestFactory.create(AppModule, adapter, { logger: false });
-  await app.init();
-  appInitialized = true;
+function initApp(): Promise<void> {
+  if (!initPromise) {
+    initPromise = (async () => {
+      const app = await NestFactory.create(AppModule, adapter, { logger: ['error', 'warn'] });
+      await app.init();
+    })();
+  }
+  return initPromise!;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
