@@ -1,61 +1,66 @@
-# Redirect App — Design Spec
+# Приложение редиректов — Дизайн-спек
 
-**Date:** 2026-05-20
+**Дата:** 2026-05-20
 
-## Overview
+## Обзор
 
-A NestJS application with a single public endpoint that accepts a URL via query parameter and redirects the client to it. Deployed on Vercel as a Serverless Function using `@vercel/node`.
+NestJS-приложение с одним публичным эндпоинтом, который принимает URL через query-параметр и выполняет редирект клиента на него. Деплоится на Vercel как Serverless Function через `@vercel/node`.
 
-## Endpoint
+## Эндпоинт
 
 ```
-GET /redirect?url=<target-url>
-→ HTTP 302, Location: <target-url>
+GET /redirect?url=<целевой-url>
+→ HTTP 302, Location: <целевой-url>
 ```
 
-- No URL validation — any value passed in `url` is used as-is.
-- No authentication.
+- Валидация URL не выполняется — любое переданное значение используется как есть.
+- Авторизация отсутствует.
 
-## Architecture
+## Архитектура
 
-Standard NestJS project with one module. Vercel runs it via a serverless wrapper:
+Стандартный NestJS-проект с одним модулем. Vercel запускает его через serverless-обёртку:
 
-- `api/index.ts` — exports a Vercel-compatible handler that bootstraps the Nest app and delegates requests to it.
-- `vercel.json` — routes all incoming traffic to `api/index.ts`.
-- `src/main.ts` — standard Nest bootstrap for local development (`npm run start:dev`).
+- `api/index.ts` — экспортирует Vercel-совместимый handler, который инициализирует Nest-приложение и делегирует ему запросы.
+- `vercel.json` — роутит весь входящий трафик на `api/index.ts`.
+- `src/main.ts` — стандартный Nest bootstrap для локальной разработки.
 
-## File Structure
+## Структура файлов
 
 ```
 src/
-  app.module.ts        — root module, imports AppController
-  app.controller.ts    — GET /redirect handler
-  main.ts              — local dev entry point
+  app.module.ts        — корневой модуль, импортирует AppController
+  app.controller.ts    — обработчик GET /redirect
+  main.ts              — точка входа для локальной разработки
 api/
-  index.ts             — Vercel serverless handler
-vercel.json            — routes all requests to api/index
+  index.ts             — serverless handler для Vercel
+vercel.json            — роутит все запросы на api/index
 package.json
 tsconfig.json
 ```
 
-## Key Implementation Details
+## Ключевые детали реализации
 
-- **Framework:** NestJS with default Express adapter.
-- **Vercel adapter:** `@vercel/node` — wraps the Express instance as a serverless function.
-- **Redirect status:** 302 (temporary) — browsers won't cache, easy to migrate to a custom domain later.
-- **Controller:** uses `@Res() res: Response` and calls `res.redirect(302, url)` where `url = @Query('url')`.
+- **Фреймворк:** NestJS с дефолтным Express-адаптером.
+- **Адаптер Vercel:** `@vercel/node` — оборачивает Express-инстанс как serverless-функцию.
+- **Статус редиректа:** 302 (временный) — браузеры не кэшируют, легко мигрировать на кастомный домен позже.
+- **Контроллер:** использует `@Res() res: Response` и вызывает `res.redirect(302, url)`, где `url = @Query('url')`.
 
-## Local Development
+## Локальная разработка
 
 ```bash
+# Запуск в режиме разработки (с hot-reload)
 npm run start:dev
+
+# Запуск в продакшн-режиме
+npm run build && npm run start:prod
+
 # GET http://localhost:3000/redirect?url=https://example.com
 ```
 
-## Deployment
+## Деплой
 
 ```bash
 npx vercel deploy
 ```
 
-Vercel auto-assigns a `*.vercel.app` domain. Custom domain can be added later via Vercel dashboard.
+Vercel автоматически присваивает домен `*.vercel.app`. Кастомный домен можно подключить позже через дашборд Vercel.
